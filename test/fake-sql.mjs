@@ -1,6 +1,6 @@
 // Base de datos en memoria que imita las consultas de las funciones. Sirve para pruebas y para `npm run dev:mock`.
 // No valida el SQL contra Postgres: solo el enrutamiento y la forma de las respuestas.
-import { STATION_SEED } from '../netlify/functions/_seed.mjs';
+import { STATION_SEED } from './seed.mjs';
 
 export function createFakeSql() {
   const stations = new Map(STATION_SEED.map((s) => [s.id, { ...s }]));

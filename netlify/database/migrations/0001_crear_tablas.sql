@@ -1,6 +1,4 @@
--- Esquema de Nodos Clarity Riverport (Postgres / Netlify DB).
--- Las funciones lo aplican solas la primera vez (netlify/functions/_db.mjs);
--- este archivo queda como referencia y para ejecutarlo a mano si se prefiere.
+-- Tablas de Nodos Clarity Riverport. Netlify las crea solas en cada despliegue (Netlify Database / Postgres).
 
 create table if not exists stations (
   id            text primary key,              -- sourceId de Clarity

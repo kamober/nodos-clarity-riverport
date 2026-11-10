@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
+import fs from 'node:fs';
 import { createFakeSql } from './fake-sql.mjs';
+import { STATION_SEED } from './seed.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 globalThis.__SQL_OVERRIDE = createFakeSql();
@@ -9,6 +11,10 @@ globalThis.__IMPORT_TOKEN = 'secreto';
 const load = async (n) => (await import(pathToFileURL(path.join(root, `netlify/functions/${n}.mjs`)))).default;
 const [stations, readings, imp] = await Promise.all(['stations', 'readings', 'import'].map(load));
 const post = (body, token = 'secreto') => imp(new Request('http://x/api/import', { method: 'POST', headers: { 'x-import-token': token }, body: JSON.stringify(body) }));
+
+// la migración SQL siembra los mismos nodos (id, nombre, coordenadas) que usa la base de prueba
+const mig = fs.readFileSync(path.join(root, 'netlify/database/migrations/0002_nodos_iniciales.sql'), 'utf8').replace(/\s+/g, ' ');
+for (const s of STATION_SEED) assert.ok(mig.includes(`'${s.id}', '${s.datasource_id}', '${s.name}', ${s.lat}, ${s.lon}`), 'migración desalineada: ' + s.id);
 
 // nodos sembrados con nombre de campo
 let r = await (await stations(new Request('http://x/api/stations'))).json();

@@ -1,7 +1,7 @@
 # Nodos Clarity Riverport
 
 Seguimiento de los nodos Clarity de calidad del aire de Gesoltec Riverport frente a la
-**Resolución 2254 de 2017** (MinAmbiente). Interfaz estática + Netlify Functions + Netlify DB (Postgres/Neon).
+**Resolución 2254 de 2017** (MinAmbiente). Interfaz estática + Netlify Functions + Netlify Database (Postgres), igual que `operativos-en-via`.
 
 Nodos: **Sur embarcadero** (`A4THKKHX`), **Carbon** (`A4THH3V9`), **Bascula** (`A9VXKKWG`).
 
@@ -20,8 +20,8 @@ Nodos: **Sur embarcadero** (`A4THKKHX`), **Carbon** (`A4THH3V9`), **Bascula** (`
 
 ```
 public/                 sitio estático (index.html, css/, js/app.js, js/analysis.js, core.js)
-netlify/functions/      API: stations, readings, import  (+ _db.mjs crea el esquema solo)
-db/schema.sql           esquema de referencia
+netlify/functions/      API: stations, readings, import
+netlify/database/migrations/  tablas y nodos iniciales (se aplican solas en cada despliegue)
 scripts/import-csv.mjs  carga masiva de CSV por línea de comandos
 scripts/dev-server.mjs  servidor local con base en memoria (sin Netlify ni base real)
 test/                   pruebas de la API y del análisis (npm test)
@@ -34,11 +34,11 @@ test/                   pruebas de la API y del análisis (npm test)
 1. **Repositorio.** Sube este proyecto a `kamober/nodos-clarity-riverport`.
 2. **Sitio.** En Netlify: *Add new project → Import from Git* y elige el repositorio. `netlify.toml` ya
    define la carpeta publicada (`public`) y las funciones; no hay comando de build.
-3. **Base de datos.** En el sitio, añade **Netlify DB** (Postgres con Neon). Esto crea la variable
-   `NETLIFY_DATABASE_URL` sin que la configures. Las tablas se crean solas en la primera llamada a la API
-   (también están en `db/schema.sql` si prefieres aplicarlas a mano).
-4. **Token de escritura.** En *Site configuration → Environment variables* crea `IMPORT_TOKEN` con una clave larga.
-   Sin ella no se puede importar ni renombrar nodos.
+3. **Base de datos.** En el sitio: **Data & Storage → Database → Create a database** (o `netlify database init`).
+   Las tablas y los tres nodos (Sur embarcadero, Carbon, Bascula) los crean las migraciones en el siguiente despliegue.
+   No hay variable de conexión que configurar.
+4. **Token de escritura y despliegue.** En *Project configuration → Environment variables* crea `IMPORT_TOKEN` con una
+   clave larga (sin ella no se puede importar ni renombrar nodos) y luego **Deploys → Trigger deploy**.
 5. **Cargar datos.** Abre el sitio, ve a *Importar CSV*, elige los archivos, escribe el token y guarda. O por consola:
    ```
    SITE_URL=https://tu-sitio.netlify.app IMPORT_TOKEN=... node scripts/import-csv.mjs data/*.csv
@@ -50,7 +50,7 @@ test/                   pruebas de la API y del análisis (npm test)
 
 ```
 npm install
-npx netlify dev          # con Netlify DB real (requiere `netlify link`)
+npx netlify dev          # levanta Postgres local y las funciones
 npm run dev:mock         # sin base: datos en memoria. Token de importación: dev
 node scripts/dev-server.mjs data/*.csv   # precarga CSV en el modo en memoria
 npm test
