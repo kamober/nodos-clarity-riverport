@@ -493,13 +493,14 @@ function saveAll() {
 
 /* ---------- navegación y arranque ---------- */
 var VIEWS = { recientes: viewRecientes, historico: viewHistorico, cumplimiento: viewCumplimiento, ubicaciones: viewUbicaciones, calidad: viewCalidad, importar: viewImportar };
+window.RVApp = { S: S, VIEWS: VIEWS, $: $, css: css, esc: esc, fmt: fmt, pct: pct, colorVar: colorVar, analyses: analyses, bindPeriod: bindPeriod, banner: banner, setupCanvas: setupCanvas, niceMax: niceMax, endHour: endHour, bounds: bounds };
 function route() {
-  var v = (location.hash || '#recientes').slice(1); if (!VIEWS[v]) v = 'recientes';
+  var v = (location.hash || '#ejecutivo').slice(1); if (!VIEWS[v]) v = 'ejecutivo';
   [].forEach.call(document.querySelectorAll('.side a'), function (a) { if (a.dataset.v === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   if (S.lastView !== v) { mapDestroy(); S.onPick = null; }
   S.lastView = v; VIEWS[v]($('view'));
 }
-function rerenderCanvases() { var v = S.lastView; if (v === 'historico' || v === 'cumplimiento') route(); }
+function rerenderCanvases() { var v = S.lastView; if (v === 'historico' || v === 'cumplimiento' || v === 'ejecutivo') route(); }
 window.addEventListener('hashchange', route);
 $('burger').addEventListener('click', function () { $('app').classList.toggle('collapsed'); if (MapV.map) setTimeout(function () { MapV.map.invalidateSize(); }, 50); });
 $('theme').addEventListener('click', function () {

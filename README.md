@@ -11,6 +11,7 @@ Nodos: **Sur embarcadero** (`A4THKKHX`), **Carbon** (`A4THH3V9`), **Bascula** (`
 |---|---|
 | Datos recientes | Estado de cada nodo, valor actual en el mapa (OpenStreetMap) y comparación rápida con la norma |
 | Datos históricos | Selector de métrica con escala ICA, periodo, hora seleccionada, serie de tiempo y tabla |
+| Panel ejecutivo | Pantalla de inicio para directivos: 6 indicadores (cumplimiento normativo, PM2.5 de la red, días dentro de norma, excedencias, disponibilidad de datos, brecha a la meta 2030) con detalle al hacer clic, tendencia mensual, medidores, ICA por nodo, perfil horario, alertas con acción, semáforo normativo, ranking y resumen copiable. Cálculo en `public/js/kpis.js` |
 | Cumplimiento de la norma | Matriz PM2.5/PM10/NO2 × nodo (anual, 24 h, 1 h), límites vigentes o meta 2030, calendario ICA |
 | Ubicaciones | Renombrar nodos y ver coordenadas |
 | Control de calidad | Lecturas descartadas, cobertura y método |
