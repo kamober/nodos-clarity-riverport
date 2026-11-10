@@ -1,0 +1,15 @@
+{
+  "name": "nodos-clarity-riverport",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Visualización de nodos Clarity de calidad del aire (Gesoltec Riverport) frente a la Resolución 2254 de 2017",
+  "scripts": {
+    "dev": "netlify dev",
+    "dev:mock": "node scripts/dev-server.mjs",
+    "import": "node scripts/import-csv.mjs",
+    "test": "node test/api.test.mjs"
+  },
+  "dependencies": {
+    "@netlify/neon": "^0.1.0"
+  }
+}
