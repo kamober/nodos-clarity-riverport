@@ -16,6 +16,8 @@
     for (i = 0; i < o.stations.length; i++) if (!(o.hidden && o.hidden[o.stations[i].id])) idx.push(i);
     var st = idx.map(function (k) { return o.stations[k]; }), an = idx.map(function (k) { return o.analyses[k]; });
     var D = o.d1 - o.d0, lim = o.lim, out = { D: D, nodes: st, analyses: an, lim: lim };
+    out.total = o.stations.length;
+    out.excluidos = o.stations.filter(function (s) { return o.hidden && o.hidden[s.id]; }).map(function (s) { return s.name; });
 
     // 1) Cumplimiento por estándar (misma regla que la matriz)
     var rows = R.evalRows(an, lim), c = { ok: 0, bad: 0, warn: 0, na: 0 };
@@ -125,6 +127,7 @@
   function narrativa(o, k) {
     var m = k.medias, parts = [], red = 'la red de ' + k.nodes.length + ' nodo' + (k.nodes.length === 1 ? '' : 's');
     if (!k.nodes.length) return 'No hay nodos seleccionados.';
+    if (k.excluidos.length) parts.push('Vista filtrada: se muestran ' + k.nodes.length + ' de ' + k.total + ' nodos (' + k.nodes.map(function (s) { return s.name; }).join(', ') + '); excluidos: ' + k.excluidos.join(', ') + '.');
     parts.push('Del ' + R.dayToDate(o.d0) + ' al ' + R.dayToDate(o.d1 - 1) + ', ' + red + ' registró un PM2.5 promedio de ' + fnum(m.pm25.mean, 1) + ' µg/m³ (' + (m.pm25.ratio === null ? '–' : Math.round(m.pm25.ratio * 100)) + ' % del límite anual de ' + m.pm25.limit + '), un PM10 de ' + fnum(m.pm10.mean, 1) + ' µg/m³ (' + (m.pm10.ratio === null ? '–' : Math.round(m.pm10.ratio * 100)) + ' % de ' + m.pm10.limit + ') y un NO2 de ' + fnum(m.no2.mean, 1) + ' µg/m³ (' + (m.no2.ratio === null ? '–' : Math.round(m.no2.ratio * 100)) + ' % de ' + m.no2.limit + ').');
     var dn = k.diasNorma.pm25;
     if (dn.valid) parts.push('El ' + fnum(dn.pct * 100, 1) + ' % de los ' + fnum(dn.valid, 0) + ' días-nodo evaluados cumplió el límite diario de PM2.5 de ' + NORM.pm25.d24 + ' µg/m³; hubo ' + k.excedencias.pm25 + ' excedencia' + (k.excedencias.pm25 === 1 ? '' : 's') + ' de PM2.5, ' + k.excedencias.pm10 + ' de PM10 y ' + k.excedencias.no2 + ' horas de NO2 sobre su límite.');

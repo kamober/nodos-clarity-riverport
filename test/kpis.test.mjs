@@ -31,6 +31,9 @@ assert.ok(k.resumen.includes('2 nodos') && k.resumen.includes('Atención: Nodo A
 const k2 = K.compute({ stations, analyses, d0, d1: d0 + 3, lim: '2030', hidden: { A: true }, nowH });
 assert.equal(k2.nodes.length, 1); assert.equal(k2.excedencias.total, 0); assert.equal(k2.medias.pm25.limit, 15);
 assert.equal(k2.cumplimiento.index, 1);
+assert.deepEqual(k2.excluidos, ['Nodo A']); assert.equal(k2.total, 2);
+assert.ok(k2.resumen.startsWith('Vista filtrada: se muestran 1 de 2 nodos (Nodo B); excluidos: Nodo A.'));
+assert.equal(k.excluidos.length, 0); assert.ok(!k.resumen.includes('Vista filtrada'));
 
 // --- datos reales (solo si están disponibles): debe coincidir con el cálculo independiente en pandas
 const U = '/mnt/user-data/uploads/', files = ['aa59dadc-JBXWQEMWEQ.csv', 'e845f1ee-JB72VQIKWA.csv', '6abfea8c-JBXYK18HAZ.csv'];

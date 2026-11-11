@@ -102,7 +102,8 @@ function view(el) {
   if (!A.bounds()) { el.innerHTML = '<div class="pagehead"><h1>Panel ejecutivo</h1></div>' + A.banner(); return; }
   var k = compute(), m = k.medias, ci = k.cumplimiento.index, dn = k.diasNorma.pm25;
   var okc = ci === null ? 'na' : ci >= 0.9 ? 'ok' : ci >= 0.7 ? 'warn' : 'bad';
-  var chips = S.stations.map(function (s) { var on = !S.hidden[s.id]; return '<button class="chip" data-n="' + esc(s.id) + '" aria-pressed="' + on + '"><span class="sw" style="--c:var(' + A.colorVar(s) + ')"></span>' + esc(s.name) + '</button>'; }).join('');
+  var chips = S.stations.map(function (s) { var on = !S.hidden[s.id]; return '<button class="chip" data-n="' + esc(s.id) + '" aria-pressed="' + on + '"><span class="sw" style="--c:var(' + A.colorVar(s) + ')"></span>' + (on ? '✓ ' : '') + esc(s.name) + '</button>'; }).join('') +
+    '<button class="btn" id="all"' + (k.excluidos.length ? '' : ' disabled') + '>Todos</button><button class="btn" id="okonly" title="Deja solo los nodos con al menos 75 % de cobertura de PM2.5 en el periodo">Solo con cobertura suficiente</button>';
   var covOk = k.disponibilidad.cov !== null && k.disponibilidad.cov >= 0.75;
   var tiles = '<div class="tiles">' +
     tile('cumpl', 't-navy', 'Cumplimiento normativo', ci === null ? '–' : Math.round(ci * 100), '%', k.cumplimiento.ok + ' de ' + (k.cumplimiento.ok + k.cumplimiento.bad) + ' evaluaciones cumplen', ci === null ? 'Sin datos' : ci >= 0.9 ? '✓ Nivel alto' : ci >= 0.7 ? '● Con observaciones' : '▲ Requiere acción', ring(ci, 64)) +
@@ -138,11 +139,11 @@ function view(el) {
   var matrix = '<div class="twrap"><table class="t"><thead><tr><th>Estándar</th>' + k.nodes.map(function (s) { return '<th><span class="sw" style="--c:var(' + A.colorVar(s) + ')"></span>' + esc(s.name) + '</th>'; }).join('') + '</tr></thead><tbody>' +
     k.rows.map(function (r) { return '<tr><td>' + r.std + ' · ' + r.t + '<div class="note">Límite ' + r.limit + ' µg/m³</div></td>' + r.cells.map(function (c) { var t = { ok: ['ok', '✓ Cumple'], bad: ['bad', '▲ Excede'], warnbad: ['bad', '▲ Excede*'], warn: ['warn', '● Indicativo'], na: ['na', '– Sin datos'] }[c.status]; return '<td><span class="pill ' + t[0] + '">' + t[1] + '</span><div class="note num">' + fmt(c.value, 1) + '</div></td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div><p class="note" style="margin:8px 0 0">* Excede con cobertura menor a 75 %. Indicativo: cumple pero con cobertura insuficiente.</p>';
 
-  el.innerHTML = '<div class="pagehead"><div><h1>Panel ejecutivo · Cumplimiento ambiental</h1><div class="note">Riverport Sociedad Portuaria · Resolución 2254 de 2017 (MinAmbiente) · seguimiento con nodos Clarity</div></div><span class="note">Del ' + R.dayToDate(S.d0) + ' al ' + R.dayToDate(S.d1 - 1) + ' · ' + (S.d1 - S.d0) + ' días</span></div>' + A.banner() +
+  el.innerHTML = '<div class="pagehead"><div><h1>Panel ejecutivo · Cumplimiento ambiental</h1><div class="note">Riverport Sociedad Portuaria · Resolución 2254 de 2017 (MinAmbiente) · seguimiento con nodos Clarity</div></div><span class="note">Del ' + R.dayToDate(S.d0) + ' al ' + R.dayToDate(S.d1 - 1) + ' · ' + (S.d1 - S.d0) + ' días</span></div>' + A.banner() + (k.excluidos.length ? '<div class="banner" role="status" style="margin-bottom:12px"><b>Vista filtrada:</b> se muestran ' + k.nodes.length + ' de ' + k.total + ' nodos (' + esc(k.nodes.map(function (n) { return n.name; }).join(', ')) + '). Excluidos: ' + esc(k.excluidos.join(', ')) + '. Esto aparece también en el resumen ejecutivo.</div>' : '') +
     '<div class="card ctlbar"><div class="ctl"><span class="lab">Periodo</span><div class="seg" id="presets">' + ['365:12 meses', '90:90 días', '30:30 días', 'all:Todo'].map(function (x) { var p = x.split(':'); return '<button data-p="' + p[0] + '" aria-pressed="' + (S.preset === p[0]) + '">' + p[1] + '</button>'; }).join('') + '</div></div>' +
     '<div class="ctl"><label for="dfrom">Desde</label><input type="date" id="dfrom" value="' + R.dayToDate(S.d0) + '"></div><div class="ctl"><label for="dto">Hasta</label><input type="date" id="dto" value="' + R.dayToDate(S.d1 - 1) + '"></div>' +
     '<div class="ctl"><span class="lab">Límites anuales</span><div class="seg" id="lim"><button data-l="2018" aria-pressed="' + (S.lim === '2018') + '">Vigentes</button><button data-l="2030" aria-pressed="' + (S.lim === '2030') + '">Meta 2030</button></div></div>' +
-    '<div class="ctl grow"><span class="lab">Nodos incluidos</span><div class="chips" id="chips">' + chips + '</div></div></div>' +
+    '<div class="ctl grow"><span class="lab">Nodos incluidos (elige uno, dos o los tres)</span><div class="chips" id="chips">' + chips + '</div></div></div>' +
     tiles +
     '<div class="g2"><div class="card"><header><h2>Tendencia mensual</h2><div class="row" style="gap:8px"><div class="seg" id="pols">' + ['pm25', 'pm10', 'no2'].map(function (p) { return '<button data-p="' + p + '" aria-pressed="' + (E.pol === p) + '">' + POLN[p] + '</button>'; }).join('') + '</div><button class="btn" id="tt">' + (E.table ? 'Ver gráfico' : 'Ver tabla') + '</button></div></header><div id="trend"></div><p class="note" style="margin:6px 0 0">Promedio mensual por nodo; un mes se muestra si tiene al menos 75 % de días válidos. Línea roja: límite anual.</p></div>' +
     '<div class="card"><header><h2>% del límite anual</h2><span class="note">Marca = 100 % del límite</span></header><div class="gauges">' + gauge('pm25', m.pm25) + gauge('pm10', m.pm10) + gauge('no2', m.no2) + '</div></div></div>' +
@@ -158,6 +159,12 @@ function view(el) {
 
   A.bindPeriod(function () { view(el); });
   $('lim').addEventListener('click', function (e) { var l = e.target.dataset && e.target.dataset.l; if (!l) return; S.lim = l; view(el); });
+  $('all').addEventListener('click', function () { S.hidden = {}; view(el); });
+  $('okonly').addEventListener('click', function () {
+    var an = A.analyses(), keep = S.stations.filter(function (s, i) { return an[i].pm25.dayCov >= 0.75; });
+    if (!keep.length) { this.textContent = 'Ningún nodo alcanza 75 %'; return; }
+    S.hidden = {}; S.stations.forEach(function (s) { if (keep.indexOf(s) < 0) S.hidden[s.id] = true; }); view(el);
+  });
   $('chips').addEventListener('click', function (e) { var b = e.target.closest('.chip'); if (!b) return; var id = b.dataset.n; if (S.hidden[id]) delete S.hidden[id]; else if (S.stations.filter(function (s) { return !S.hidden[s.id]; }).length > 1) S.hidden[id] = true; view(el); });
   [].forEach.call(el.querySelectorAll('.tile'), function (b) { b.addEventListener('click', function () { openDetail(b.dataset.d); }); });
   [$('pols'), $('pols2')].forEach(function (g) { g.addEventListener('click', function (e) { var p = e.target.dataset && e.target.dataset.p; if (!p) return; E.pol = p; view(el); }); });
